@@ -1,0 +1,36 @@
+name: email-triage-prioritization-system
+description: >
+  Deterministic OpenEnv environment for realistic email inbox triage across
+  spam filtering, priority assignment, and workflow routing.
+version: "1.0.0"
+
+entrypoint:
+  module: env.environment
+  object: EmailTriageEnv
+
+methods:
+  reset:
+    signature: reset(task_level: str = "easy") -> Observation
+    description: Reset the environment to a fixed task and return the initial observation.
+  step:
+    signature: step(action: Action) -> tuple[Observation, Reward, bool, dict]
+    description: Apply a structured action and return observation, reward, done, and info.
+  state:
+    signature: state() -> dict
+    description: Return the full internal environment state for grading and debugging.
+
+models:
+  observation: env.models.Observation
+  action: env.models.Action
+  reward: env.models.Reward
+
+tasks:
+  - id: easy
+    difficulty: easy
+    goal: Classify each email as spam, important, or normal.
+  - id: medium
+    difficulty: medium
+    goal: Classify each email and assign a priority.
+  - id: hard
+    difficulty: hard
+    goal: Complete full triage including classification, priority, action, and folder routing.
