@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "email-triage-open-env"
+version = "1.0.0"
+description = "Deterministic OpenEnv environment for realistic email inbox triage."
+authors = [
+    { name = "Amrutha", email = "amrutha@example.com" }
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "openai",
+    "PyYAML"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["env*"]
