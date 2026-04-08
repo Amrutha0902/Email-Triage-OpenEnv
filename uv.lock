@@ -1,0 +1,18 @@
+version = 1
+revision = 1
+
+[[package]]
+name = "email-triage-open-env"
+version = "1.0.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "fastapi" },
+    { name = "uvicorn" },
+    { name = "pydantic" },
+    { name = "openai" },
+    { name = "PyYAML" },
+    { name = "openenv" },
+]
+
+[metadata]
+config-version = 1

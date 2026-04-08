@@ -14,9 +14,13 @@ dependencies = [
     "uvicorn",
     "pydantic",
     "openai",
-    "PyYAML"
+    "PyYAML",
+    "openenv>=0.2.0"
 ]
+
+[project.scripts]
+server = "server.app:start"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["env*"]
+include = ["env*", "server*"]
