@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import time
 from typing import Any
 
@@ -62,10 +63,10 @@ def infer_action(client: OpenAI, model_name: str, observation: dict[str, Any]) -
 
 
 def run_task(task_level: str, client: OpenAI, model_name: str) -> dict[str, Any]:
-    """Run one task to completion and return deterministic metrics."""
+    """Run one task to completion and return metrics with mandatory formatted logs."""
     
-    # [START] tag is mandatory for judges to see task initialization
-    print(f"[START] Task level: {task_level}")
+    # [START] tag in exact format requested: [START] task=NAME
+    print(f"[START] task={task_level}", flush=True)
     
     env = EmailTriageEnv(task_level=task_level)
     observation = env.reset(task_level=task_level)
@@ -78,39 +79,33 @@ def run_task(task_level: str, client: OpenAI, model_name: str) -> dict[str, Any]
         observation, reward, done, _info = env.step(action)
         cumulative_reward += reward.score
         
-        # [STEP] tag is mandatory to show progression
-        log_entry = {
-            "step": step_num,
-            "action": action.model_dump(),
-            "reward": reward.score,
-            "cumulative_reward": round(cumulative_reward, 4),
-            "done": done
-        }
-        print(f"[STEP] {json.dumps(log_entry)}")
+        # [STEP] tag in exact format requested: [STEP] step=N reward=VAL
+        print(f"[STEP] step={step_num} reward={reward.score} cumulative_reward={round(cumulative_reward, 4)} done={done}", flush=True)
         
         step_num += 1
 
     state = env.state()
-    result = {
+    final_score = state["final_score"]
+    steps_taken = state["step_count"]
+    
+    # [END] tag in exact format requested: [END] task=NAME score=VAL steps=N
+    print(f"[END] task={task_level} score={final_score} steps={steps_taken}", flush=True)
+    
+    return {
         "task": task_level,
-        "steps": state["step_count"],
+        "steps": steps_taken,
         "cumulative_reward": round(cumulative_reward, 4),
-        "final_score": state["final_score"],
+        "final_score": final_score,
         "final_breakdown": state["final_breakdown"],
     }
-    
-    # [END] tag summarizes the results
-    print(f"[END] Result: {json.dumps(result)}")
-    return result
 
 
 def main() -> None:
     """Run all tasks and print reproducible scores."""
-    print("--- INFERENCE SESSION STARTING ---")
     
     # Verify environment
     if "OPENAI_API_KEY" not in os.environ:
-        print("ERROR: Missing OPENAI_API_KEY environment variable.")
+        print("ERROR: Missing OPENAI_API_KEY environment variable.", flush=True)
         return
 
     model_name = os.environ.get("MODEL_NAME", "gpt-4o-mini")
@@ -128,10 +123,11 @@ def main() -> None:
         "results": results
     }
     
-    print("\n--- FINAL BENCHMARK SUMMARY ---")
-    print(json.dumps(summary, indent=2))
-    print("--- INFERENCE SESSION COMPLETE ---")
+    # Final overall summary for the human judges
+    print("\n--- FINAL BENCHMARK SUMMARY ---", flush=True)
+    print(json.dumps(summary, indent=2), flush=True)
 
 
 if __name__ == "__main__":
+    # Ensure stdout is unbuffered at the system level
     main()
